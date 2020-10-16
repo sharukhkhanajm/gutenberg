@@ -165,7 +165,9 @@ public interface GutenbergBridgeJS2Parent extends RequestExecutor {
 
     void gutenbergDidSendButtonPressedAction(String buttonType);
 
-    void onAddMention(Consumer<String> onSuccess);
+    void onShowUserSuggestions(Consumer<String> onResult);
+
+    void onShowXpostSuggestions(Consumer<String> onResult);
 
     void setStarterPageTemplatesTooltipShown(boolean tooltipShown);
 
