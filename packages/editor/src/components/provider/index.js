@@ -301,7 +301,7 @@ class EditorProvider extends Component {
 
 export default compose( [
 	withRegistryProvider,
-	withSelect( ( select ) => {
+	withSelect( ( select, { __unstableTemplate } ) => {
 		const {
 			canUserUseUnfilteredHTML,
 			__unstableIsEditorReady: isEditorReady,
@@ -315,7 +315,7 @@ export default compose( [
 		return {
 			canUserUseUnfilteredHTML: canUserUseUnfilteredHTML(),
 			isReady: isEditorReady(),
-			blocks: getEditorBlocks(),
+			blocks: __unstableTemplate ?? getEditorBlocks(),
 			selectionStart: getEditorSelectionStart(),
 			selectionEnd: getEditorSelectionEnd(),
 			reusableBlocks: select( 'core' ).getEntityRecords(
