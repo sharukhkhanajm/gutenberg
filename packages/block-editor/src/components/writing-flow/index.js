@@ -501,6 +501,14 @@ export default function WritingFlow( { children } ) {
 
 					if ( navigateDown ) {
 						nextTabbable = focus.tabbable.findNext( wrapper );
+
+						if ( ! nextTabbable ) {
+							nextTabbable =
+								ownerDocument.defaultView.frameElement;
+							nextTabbable = focus.tabbable.findNext(
+								nextTabbable
+							);
+						}
 					} else {
 						nextTabbable = focus.tabbable.findPrevious( wrapper );
 					}

@@ -42,6 +42,26 @@ const FocusManaged = withConstrainedTabbing(
  */
 const SLOT_NAME = 'Popover';
 
+function offsetIframe( rect, ownerDocument ) {
+	if ( ownerDocument !== document ) {
+		const iframe = Array.from( document.querySelectorAll( 'iframe' ) ).find(
+			( element ) => {
+				return element.contentDocument === ownerDocument;
+			}
+		);
+		const iframeRect = iframe.getBoundingClientRect();
+
+		rect = new window.DOMRect(
+			rect.left + iframeRect.left,
+			rect.top + iframeRect.top,
+			rect.width,
+			rect.height
+		);
+	}
+
+	return rect;
+}
+
 function computeAnchorRect(
 	anchorRefFallback,
 	anchorRect,
@@ -71,12 +91,21 @@ function computeAnchorRect(
 			return;
 		}
 
-		if ( anchorRef instanceof window.Range ) {
-			return getRectangleFromRange( anchorRef );
+		if ( anchorRef.endContainer ) {
+			const { ownerDocument } = anchorRef.endContainer;
+			return offsetIframe(
+				getRectangleFromRange( anchorRef ),
+				ownerDocument
+			);
 		}
 
-		if ( anchorRef instanceof window.Element ) {
-			const rect = anchorRef.getBoundingClientRect();
+		const { ownerDocument } = anchorRef;
+
+		if ( ownerDocument ) {
+			const rect = offsetIframe(
+				anchorRef.getBoundingClientRect(),
+				ownerDocument
+			);
 
 			if ( shouldAnchorIncludePadding ) {
 				return rect;
@@ -88,12 +117,14 @@ function computeAnchorRect(
 		const { top, bottom } = anchorRef;
 		const topRect = top.getBoundingClientRect();
 		const bottomRect = bottom.getBoundingClientRect();
-		const rect = new window.DOMRect(
+		let rect = new window.DOMRect(
 			topRect.left,
 			topRect.top,
 			topRect.width,
 			bottomRect.bottom - topRect.top
 		);
+
+		rect = offsetIframe( rect, top.ownerDocument );
 
 		if ( shouldAnchorIncludePadding ) {
 			return rect;
@@ -266,6 +297,9 @@ const Popover = ( {
 	__unstableSlotName = SLOT_NAME,
 	__unstableObserveElement,
 	__unstableBoundaryParent,
+	__unstabelOnHeightChange,
+	__unstableSpanOverAnchor,
+	__unstableTransparent,
 	/* eslint-enable no-unused-vars */
 	...contentProps
 } ) => {
@@ -278,6 +312,12 @@ const Popover = ( {
 	const isExpanded = expandOnMobile && isMobileViewport;
 	const [ containerResizeListener, contentSize ] = useResizeObserver();
 	noArrow = isExpanded || noArrow;
+
+	useEffect( () => {
+		if ( __unstabelOnHeightChange ) {
+			__unstabelOnHeightChange( contentSize.height );
+		}
+	}, [ contentSize.height ] );
 
 	useLayoutEffect( () => {
 		if ( isExpanded ) {
@@ -348,6 +388,7 @@ const Popover = ( {
 				yAxis,
 				contentHeight,
 				contentWidth,
+				popoverWidth,
 			} = computePopoverPosition(
 				anchor,
 				usedContentSize,
@@ -355,7 +396,8 @@ const Popover = ( {
 				__unstableStickyBoundaryElement,
 				containerRef.current,
 				relativeOffsetTop,
-				boundaryElement
+				boundaryElement,
+				__unstableSpanOverAnchor
 			);
 
 			if (
@@ -383,6 +425,11 @@ const Popover = ( {
 				contentRef.current,
 				'maxWidth',
 				typeof contentWidth === 'number' ? contentWidth + 'px' : ''
+			);
+			setStyle(
+				contentRef.current,
+				'width',
+				typeof popoverWidth === 'number' ? popoverWidth + 'px' : ''
 			);
 
 			// Compute the animation position
@@ -424,6 +471,16 @@ const Popover = ( {
 		window.addEventListener( 'click', refreshOnAnimationFrame );
 		window.addEventListener( 'resize', refresh );
 		window.addEventListener( 'scroll', refresh, true );
+
+		Array.from( document.querySelectorAll( 'iframe' ) ).forEach(
+			( element ) => {
+				element.contentWindow.addEventListener(
+					'scroll',
+					refresh,
+					true
+				);
+			}
+		);
 
 		let observer;
 
@@ -545,6 +602,7 @@ const Popover = ( {
 					className,
 					animateClassName,
 					{
+						'is-spanned-over': __unstableSpanOverAnchor,
 						'is-expanded': isExpanded,
 						'is-without-arrow': noArrow,
 						'is-alternate': isAlternate,
@@ -569,7 +627,9 @@ const Popover = ( {
 				) }
 				<div
 					ref={ contentRef }
-					className="components-popover__content"
+					className={ classnames( 'components-popover__content', {
+						'is-transparent': __unstableTransparent,
+					} ) }
 					tabIndex="-1"
 				>
 					<div style={ { position: 'relative' } }>

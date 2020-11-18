@@ -9,6 +9,7 @@ import { useEffect, useCallback } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { useShortcut } from '@wordpress/keyboard-shortcuts';
 import { __ } from '@wordpress/i18n';
+import { documentHasSelection } from '@wordpress/dom';
 
 function KeyboardShortcuts() {
 	// Shortcuts Logic
@@ -138,6 +139,14 @@ function KeyboardShortcuts() {
 		'core/block-editor/select-all',
 		useCallback(
 			( event ) => {
+				const { ownerDocument, contentDocument } = event.target;
+
+				if (
+					documentHasSelection( contentDocument || ownerDocument )
+				) {
+					return;
+				}
+
 				event.preventDefault();
 				multiSelect(
 					first( rootBlocksClientIds ),

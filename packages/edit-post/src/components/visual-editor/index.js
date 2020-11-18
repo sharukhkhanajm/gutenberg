@@ -15,8 +15,10 @@ import {
 	__unstableUseScrollMultiSelectionIntoView as useScrollMultiSelectionIntoView,
 	__experimentalBlockSettingsMenuFirstItem,
 	__experimentalUseResizeCanvas as useResizeCanvas,
+	__unstableEditorStyles as EditorStyles,
+	Iframe,
 } from '@wordpress/block-editor';
-import { Popover } from '@wordpress/components';
+import { Popover, DropZoneProvider } from '@wordpress/components';
 import { useRef } from '@wordpress/element';
 
 /**
@@ -25,12 +27,8 @@ import { useRef } from '@wordpress/element';
 import BlockInspectorButton from './block-inspector-button';
 import { useSelect } from '@wordpress/data';
 
-export default function VisualEditor() {
+function Canvas( { settings } ) {
 	const ref = useRef();
-	const deviceType = useSelect( ( select ) => {
-		return select( 'core/edit-post' ).__experimentalGetPreviewDeviceType();
-	}, [] );
-	const inlineStyles = useResizeCanvas( deviceType );
 
 	useScrollMultiSelectionIntoView( ref );
 	useBlockSelectionClearer( ref );
@@ -38,23 +36,43 @@ export default function VisualEditor() {
 	useClipboardHandler( ref );
 	useTypingObserver( ref );
 
+	function setBodyRef( newRef ) {
+		if ( newRef ) {
+			ref.current = newRef.ownerDocument.body;
+		} else {
+			ref.current = null;
+		}
+	}
+
 	return (
-		<div className="edit-post-visual-editor">
+		<DropZoneProvider>
+			<EditorStyles styles={ settings.styles } />
+			<WritingFlow>
+				<div
+					ref={ setBodyRef }
+					className="edit-post-visual-editor__post-title-wrapper"
+				>
+					<PostTitle />
+				</div>
+				<BlockList />
+			</WritingFlow>
+		</DropZoneProvider>
+	);
+}
+
+export default function VisualEditor( { settings } ) {
+	const deviceType = useSelect( ( select ) => {
+		return select( 'core/edit-post' ).__experimentalGetPreviewDeviceType();
+	}, [] );
+	const inlineStyles = useResizeCanvas( deviceType );
+
+	return (
+		<div className="edit-post-visual-editor" style={ { height: '100%' } }>
 			<VisualEditorGlobalKeyboardShortcuts />
 			<Popover.Slot name="block-toolbar" />
-			<div
-				ref={ ref }
-				className="editor-styles-wrapper"
-				tabIndex="-1"
-				style={ inlineStyles }
-			>
-				<WritingFlow>
-					<div className="edit-post-visual-editor__post-title-wrapper">
-						<PostTitle />
-					</div>
-					<BlockList />
-				</WritingFlow>
-			</div>
+			<Iframe style={ inlineStyles } head={ window.__editorStyles.html }>
+				<Canvas settings={ settings } />
+			</Iframe>
 			<__experimentalBlockSettingsMenuFirstItem>
 				{ ( { onClose } ) => (
 					<BlockInspectorButton onClick={ onClose } />

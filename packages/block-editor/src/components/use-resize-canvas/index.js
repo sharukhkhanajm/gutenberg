@@ -4,11 +4,6 @@
 import { useEffect, useState } from '@wordpress/element';
 
 /**
- * Internal dependencies
- */
-import { default as useSimulatedMediaQuery } from '../../components/use-simulated-media-query';
-
-/**
  * Function to resize the editor window.
  *
  * @param {string} deviceType Used for determining the size of the container (e.g. Desktop, Tablet, Mobile)
@@ -68,11 +63,6 @@ export default function useResizeCanvas( deviceType ) {
 				return null;
 		}
 	};
-
-	useSimulatedMediaQuery(
-		'resizable-editor-section',
-		getCanvasWidth( deviceType )
-	);
 
 	return contentInlineStyles( deviceType );
 }

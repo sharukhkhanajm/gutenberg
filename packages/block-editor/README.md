@@ -380,6 +380,10 @@ _Returns_
 
 -   `string`: Gradient value.
 
+<a name="Iframe" href="#Iframe">#</a> **Iframe**
+
+Undocumented declaration.
+
 <a name="InnerBlocks" href="#InnerBlocks">#</a> **InnerBlocks**
 
 _Related_

@@ -6,7 +6,7 @@ import { compact, map } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -14,25 +14,28 @@ import { useEffect } from '@wordpress/element';
 import transformStyles from '../../utils/transform-styles';
 
 function EditorStyles( { styles } ) {
+	const ref = useRef();
+
 	useEffect( () => {
 		const updatedStyles = transformStyles(
 			styles,
 			'.editor-styles-wrapper'
 		);
 
+		const { ownerDocument } = ref.current;
 		const nodes = map( compact( updatedStyles ), ( updatedCSS ) => {
-			const node = document.createElement( 'style' );
+			const node = ownerDocument.createElement( 'style' );
 			node.innerHTML = updatedCSS;
-			document.body.appendChild( node );
+			ownerDocument.body.appendChild( node );
 
 			return node;
 		} );
 
 		return () =>
-			nodes.forEach( ( node ) => document.body.removeChild( node ) );
+			nodes.forEach( ( node ) => ownerDocument.body.removeChild( node ) );
 	}, [ styles ] );
 
-	return null;
+	return <div ref={ ref } />;
 }
 
 export default EditorStyles;

@@ -3,6 +3,14 @@
 	flex-direction: column;
 }
 
+.block-editor-writing-flow__click-redirect,
+.editor-styles-wrapper > div:focus {
+	outline: none;
+}
+
 .block-editor-writing-flow__click-redirect {
+	// Allow the page to be scrolled with the last block in the middle.
+	// min-height: 40vh;
+	width: 100%;
 	cursor: text;
 }

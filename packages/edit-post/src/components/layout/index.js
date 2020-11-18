@@ -66,7 +66,7 @@ const interfaceLabels = {
 	footer: __( 'Editor footer' ),
 };
 
-function Layout() {
+function Layout( { settings } ) {
 	const isMobileViewport = useViewportMatch( 'medium', '<' );
 	const isHugeViewport = useViewportMatch( 'huge', '>=' );
 	const {
@@ -250,7 +250,7 @@ function Layout() {
 								<TextEditor />
 							) }
 							{ isRichEditingEnabled && mode === 'visual' && (
-								<VisualEditor />
+								<VisualEditor settings={ settings } />
 							) }
 							<div className="edit-post-layout__metaboxes">
 								<MetaBoxes location="normal" />

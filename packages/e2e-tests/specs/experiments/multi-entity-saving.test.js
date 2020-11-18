@@ -8,6 +8,7 @@ import {
 	visitAdminPage,
 	trashAllPosts,
 	activateTheme,
+	canvas,
 } from '@wordpress/e2e-test-utils';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -97,7 +98,7 @@ describe( 'Multi-entity save flow', () => {
 			expect.assertions( 27 );
 			await createNewPost();
 			// Edit the page some.
-			await page.click( '.editor-post-title' );
+			await canvas().click( '.editor-post-title' );
 			await page.keyboard.type( 'Test Post...' );
 			await page.keyboard.press( 'Enter' );
 
@@ -112,14 +113,14 @@ describe( 'Multi-entity save flow', () => {
 
 			// Add a template part and edit it.
 			await insertBlock( 'Template Part' );
-			const [ createNewButton ] = await page.$x(
+			const [ createNewButton ] = await canvas().$x(
 				createNewButtonSelector
 			);
 			await createNewButton.click();
-			await page.waitForSelector( activatedTemplatePartSelector );
+			await canvas().waitForSelector( activatedTemplatePartSelector );
 			await page.keyboard.press( 'Tab' );
 			await page.keyboard.type( 'test-template-part' );
-			await page.click( '.block-editor-button-block-appender' );
+			await canvas().click( '.block-editor-button-block-appender' );
 			await page.click( '.editor-block-list-item-paragraph' );
 			await page.keyboard.type( 'some words...' );
 
@@ -167,7 +168,7 @@ describe( 'Multi-entity save flow', () => {
 			await publishPost();
 
 			// Update the post.
-			await page.click( '.editor-post-title' );
+			await canvas().click( '.editor-post-title' );
 			await page.keyboard.type( '...more title!' );
 
 			// Verify update button is enabled.
@@ -178,7 +179,7 @@ describe( 'Multi-entity save flow', () => {
 			await assertExistance( saveA11ySelector, false );
 
 			// Update template part.
-			await page.click( templatePartSelector );
+			await canvas().click( templatePartSelector );
 			await page.keyboard.type( '...some more words...' );
 			await page.keyboard.press( 'Enter' );
 

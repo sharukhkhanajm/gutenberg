@@ -259,6 +259,7 @@ export function computePopoverYAxisPosition(
  * @param {number}  relativeOffsetTop     If applicable, top offset of the
  *                                        relative positioned parent container.
  * @param {Element} boundaryElement       Boundary element.
+ * @param {boolean} __unstableSpanOverAnchor
  *
  * @return {Object} Popover position and constraints.
  */
@@ -269,8 +270,17 @@ export function computePopoverPosition(
 	stickyBoundaryElement,
 	anchorRef,
 	relativeOffsetTop,
-	boundaryElement
+	boundaryElement,
+	__unstableSpanOverAnchor
 ) {
+	if ( __unstableSpanOverAnchor ) {
+		return {
+			popoverWidth: anchorRect.width,
+			popoverTop: anchorRect.top,
+			popoverLeft: anchorRect.left,
+		};
+	}
+
 	const [ yAxis, xAxis = 'center', corner ] = position.split( ' ' );
 
 	const yAxisPosition = computePopoverYAxisPosition(

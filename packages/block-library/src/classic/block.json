@@ -11,6 +11,7 @@
 	"supports": {
 		"className": false,
 		"customClassName": false,
-		"reusable": false
+		"reusable": false,
+		"iframe": false
 	}
 }
