@@ -23,6 +23,7 @@ import {
 	ScrollLock,
 	Popover,
 	FocusReturnProvider,
+	DropZoneProvider,
 } from '@wordpress/components';
 import { useViewportMatch } from '@wordpress/compose';
 import { PluginArea } from '@wordpress/plugins';
@@ -32,7 +33,7 @@ import {
 	FullscreenMode,
 	InterfaceSkeleton,
 } from '@wordpress/interface';
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { close } from '@wordpress/icons';
 
 /**
@@ -163,9 +164,10 @@ function Layout() {
 		},
 		[ entitiesSavedStatesCallback ]
 	);
+	const ref = useRef();
 
 	return (
-		<>
+		<DropZoneProvider forwardedRef={ ref }>
 			<FullscreenMode isActive={ isFullscreenActive } />
 			<BrowserURL />
 			<UnsavedChangesWarning />
@@ -176,6 +178,7 @@ function Layout() {
 			<SettingsSidebar />
 			<FocusReturnProvider>
 				<InterfaceSkeleton
+					ref={ ref }
 					className={ className }
 					labels={ interfaceLabels }
 					header={
@@ -296,7 +299,7 @@ function Layout() {
 				<Popover.Slot />
 				<PluginArea />
 			</FocusReturnProvider>
-		</>
+		</DropZoneProvider>
 	);
 }
 

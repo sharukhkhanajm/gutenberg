@@ -14,11 +14,7 @@ import {
 	PostLockedModal,
 } from '@wordpress/editor';
 import { StrictMode, Component } from '@wordpress/element';
-import {
-	KeyboardShortcuts,
-	SlotFillProvider,
-	DropZoneProvider,
-} from '@wordpress/components';
+import { KeyboardShortcuts, SlotFillProvider } from '@wordpress/components';
 import { compose } from '@wordpress/compose';
 
 /**
@@ -136,24 +132,22 @@ class Editor extends Component {
 			<StrictMode>
 				<EditPostSettings.Provider value={ settings }>
 					<SlotFillProvider>
-						<DropZoneProvider>
-							<EditorProvider
-								settings={ editorSettings }
-								post={ post }
-								initialEdits={ initialEdits }
-								useSubRegistry={ false }
-								{ ...props }
-							>
-								<ErrorBoundary onError={ onError }>
-									<EditorInitialization postId={ postId } />
-									<Layout />
-									<KeyboardShortcuts
-										shortcuts={ preventEventDiscovery }
-									/>
-								</ErrorBoundary>
-								<PostLockedModal />
-							</EditorProvider>
-						</DropZoneProvider>
+						<EditorProvider
+							settings={ editorSettings }
+							post={ post }
+							initialEdits={ initialEdits }
+							useSubRegistry={ false }
+							{ ...props }
+						>
+							<ErrorBoundary onError={ onError }>
+								<EditorInitialization postId={ postId } />
+								<Layout />
+								<KeyboardShortcuts
+									shortcuts={ preventEventDiscovery }
+								/>
+							</ErrorBoundary>
+							<PostLockedModal />
+						</EditorProvider>
 					</SlotFillProvider>
 				</EditPostSettings.Provider>
 			</StrictMode>

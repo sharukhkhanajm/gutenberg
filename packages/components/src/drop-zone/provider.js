@@ -1,18 +1,12 @@
 /**
  * External dependencies
  */
-import { find, some, filter, includes } from 'lodash';
+import { find, some, filter, includes, throttle } from 'lodash';
 
 /**
  * WordPress dependencies
  */
-import {
-	createContext,
-	useCallback,
-	useEffect,
-	useRef,
-} from '@wordpress/element';
-import { useThrottle } from '@wordpress/compose';
+import { createContext, useEffect, useRef } from '@wordpress/element';
 import { getFilesFromDataTransfer } from '@wordpress/dom';
 
 export const Context = createContext();
@@ -98,119 +92,120 @@ function getHoveredDropZone( dropZones, position, dragEventType ) {
 	} );
 }
 
-export default function DropZoneProvider( { children } ) {
-	const ref = useRef();
+export default function DropZoneProvider( { children, forwardedRef } ) {
 	const dropZones = useRef( new Set( [] ) );
-	const lastRelative = useRef();
-
-	const updateDragZones = useCallback( ( event ) => {
-		if (
-			lastRelative.current &&
-			lastRelative.current.contains( event.target )
-		) {
-			return;
-		}
-
-		const dragEventType = getDragEventType( event );
-		const position = getPosition( event );
-		const hoveredDropZone = getHoveredDropZone(
-			dropZones,
-			position,
-			dragEventType
-		);
-
-		if ( hoveredDropZone && hoveredDropZone.isRelative ) {
-			lastRelative.current = hoveredDropZone.element.current.offsetParent;
-		} else {
-			lastRelative.current = null;
-		}
-
-		// Notifying the dropzones
-		dropZones.current.forEach( ( dropZone ) => {
-			const isDraggingOverDropZone = dropZone === hoveredDropZone;
-			dropZone.setState( {
-				isDraggingOverDocument: isTypeSupportedByDropZone(
-					dragEventType,
-					dropZone
-				),
-				isDraggingOverElement: isDraggingOverDropZone,
-				position:
-					isDraggingOverDropZone && dropZone.withPosition
-						? position
-						: null,
-				type: isDraggingOverDropZone ? dragEventType : null,
-			} );
-		} );
-
-		event.preventDefault();
-	}, [] );
-
-	const throttledUpdateDragZones = useThrottle( updateDragZones, 200 );
-
-	const onDragOver = useCallback(
-		( event ) => {
-			throttledUpdateDragZones( event );
-			event.preventDefault();
-		},
-		[ throttledUpdateDragZones ]
-	);
-
-	const resetDragState = useCallback( () => {
-		// Avoid throttled drag over handler calls
-		throttledUpdateDragZones.cancel();
-
-		dropZones.current.forEach( ( dropZone ) =>
-			dropZone.setState( {
-				isDraggingOverDocument: false,
-				isDraggingOverElement: false,
-				position: null,
-				type: null,
-			} )
-		);
-	}, [] );
-
-	function onDrop( event ) {
-		// This seemingly useless line has been shown to resolve a Safari issue
-		// where files dragged directly from the dock are not recognized
-		event.dataTransfer && event.dataTransfer.files.length; // eslint-disable-line no-unused-expressions
-
-		const dragEventType = getDragEventType( event );
-		const position = getPosition( event );
-		const hoveredDropZone = getHoveredDropZone(
-			dropZones,
-			position,
-			dragEventType
-		);
-
-		resetDragState();
-
-		if ( hoveredDropZone ) {
-			switch ( dragEventType ) {
-				case 'file':
-					hoveredDropZone.onFilesDrop(
-						[ ...getFilesFromDataTransfer( event.dataTransfer ) ],
-						position
-					);
-					break;
-				case 'html':
-					hoveredDropZone.onHTMLDrop(
-						event.dataTransfer.getData( 'text/html' ),
-						position
-					);
-					break;
-				case 'default':
-					hoveredDropZone.onDrop( event, position );
-			}
-		}
-
-		event.stopPropagation();
-		event.preventDefault();
-	}
+	const fallbackRef = useRef();
+	const ref = forwardedRef || fallbackRef;
 
 	useEffect( () => {
 		const { ownerDocument } = ref.current;
 		const { defaultView } = ownerDocument;
 
+		let lastRelative;
+
+		function updateDragZones( event ) {
+			if ( lastRelative && lastRelative.contains( event.target ) ) {
+				return;
+			}
+
+			const dragEventType = getDragEventType( event );
+			const position = getPosition( event );
+			const hoveredDropZone = getHoveredDropZone(
+				dropZones,
+				position,
+				dragEventType
+			);
+
+			if ( hoveredDropZone && hoveredDropZone.isRelative ) {
+				lastRelative = hoveredDropZone.element.current.offsetParent;
+			} else {
+				lastRelative = null;
+			}
+
+			// Notifying the dropzones
+			dropZones.current.forEach( ( dropZone ) => {
+				const isDraggingOverDropZone = dropZone === hoveredDropZone;
+				dropZone.setState( {
+					isDraggingOverDocument: isTypeSupportedByDropZone(
+						dragEventType,
+						dropZone
+					),
+					isDraggingOverElement: isDraggingOverDropZone,
+					position:
+						isDraggingOverDropZone && dropZone.withPosition
+							? position
+							: null,
+					type: isDraggingOverDropZone ? dragEventType : null,
+				} );
+			} );
+		}
+
+		const throttledUpdateDragZones = throttle( updateDragZones, 200 );
+
+		function onDragOver( event ) {
+			throttledUpdateDragZones( event );
+			event.preventDefault();
+		}
+
+		function resetDragState() {
+			// Avoid throttled drag over handler calls
+			throttledUpdateDragZones.cancel();
+
+			dropZones.current.forEach( ( dropZone ) =>
+				dropZone.setState( {
+					isDraggingOverDocument: false,
+					isDraggingOverElement: false,
+					position: null,
+					type: null,
+				} )
+			);
+		}
+
+		function onDrop( event ) {
+			// This seemingly useless line has been shown to resolve a Safari
+			// issue where files dragged directly from the dock are not
+			// recognized.
+			// eslint-disable-next-line no-unused-expressions
+			event.dataTransfer && event.dataTransfer.files.length;
+
+			const dragEventType = getDragEventType( event );
+			const position = getPosition( event );
+			const hoveredDropZone = getHoveredDropZone(
+				dropZones,
+				position,
+				dragEventType
+			);
+
+			resetDragState();
+
+			if ( hoveredDropZone ) {
+				switch ( dragEventType ) {
+					case 'file':
+						hoveredDropZone.onFilesDrop(
+							[
+								...getFilesFromDataTransfer(
+									event.dataTransfer
+								),
+							],
+							position
+						);
+						break;
+					case 'html':
+						hoveredDropZone.onHTMLDrop(
+							event.dataTransfer.getData( 'text/html' ),
+							position
+						);
+						break;
+					case 'default':
+						hoveredDropZone.onDrop( event, position );
+				}
+			}
+
+			event.stopPropagation();
+			event.preventDefault();
+		}
+
+		defaultView.addEventListener( 'drop', onDrop );
 		defaultView.addEventListener( 'dragover', onDragOver );
 		defaultView.addEventListener( 'mouseup', resetDragState );
 		// Note that `dragend` doesn't fire consistently for file and HTML drag
@@ -219,19 +214,24 @@ export default function DropZoneProvider( { children } ) {
 		defaultView.addEventListener( 'dragend', resetDragState );
 
 		return () => {
+			defaultView.removeEventListener( 'drop', onDrop );
 			defaultView.removeEventListener( 'dragover', onDragOver );
 			defaultView.removeEventListener( 'mouseup', resetDragState );
 			defaultView.removeEventListener( 'dragend', resetDragState );
 		};
-	}, [ onDragOver, resetDragState ] );
+	}, [] );
+
+	const provider = (
+		<Provider value={ dropZones.current }>{ children }</Provider>
+	);
+
+	if ( forwardedRef ) {
+		return provider;
+	}
 
 	return (
-		<div
-			ref={ ref }
-			onDrop={ onDrop }
-			className="components-drop-zone__provider"
-		>
-			<Provider value={ dropZones.current }>{ children }</Provider>
+		<div ref={ ref } className="components-drop-zone__provider">
+			{ provider }
 		</div>
 	);
 }
