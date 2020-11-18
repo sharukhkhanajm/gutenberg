@@ -36,27 +36,18 @@ function Canvas( { settings } ) {
 	useClipboardHandler( ref );
 	useTypingObserver( ref );
 
-	function setBodyRef( newRef ) {
-		if ( newRef ) {
-			ref.current = newRef.ownerDocument.body;
-		} else {
-			ref.current = null;
-		}
-	}
-
 	return (
-		<DropZoneProvider>
-			<EditorStyles styles={ settings.styles } />
-			<WritingFlow>
-				<div
-					ref={ setBodyRef }
-					className="edit-post-visual-editor__post-title-wrapper"
-				>
-					<PostTitle />
-				</div>
-				<BlockList />
-			</WritingFlow>
-		</DropZoneProvider>
+		<div tabIndex="-1" ref={ ref }>
+			<DropZoneProvider>
+				<EditorStyles styles={ settings.styles } />
+				<WritingFlow>
+					<div className="edit-post-visual-editor__post-title-wrapper">
+						<PostTitle />
+					</div>
+					<BlockList />
+				</WritingFlow>
+			</DropZoneProvider>
+		</div>
 	);
 }
 

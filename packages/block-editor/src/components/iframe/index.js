@@ -13,7 +13,6 @@ function IframeContent( { doc, head, children } ) {
 		const { frameElement } = defaultView;
 
 		doc.body.className = className;
-		doc.body.tabIndex = -1;
 		// Necessary for the resize listener to work correctly.
 		doc.body.style.position = 'relative';
 		// Body style must be overridable by themes.
