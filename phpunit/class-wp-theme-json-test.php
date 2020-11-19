@@ -216,7 +216,7 @@ class WP_Theme_JSON_Test extends WP_UnitTestCase {
 		);
 
 		$result     = $theme_json->get_stylesheet();
-		$stylesheet = ':root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.has-grey-color{color: grey;}.has-grey-background-color{background-color: grey;}';
+		$stylesheet = ':root{--wp--preset--color--grey: grey;--wp--preset--font-family--small: 14px;--wp--preset--font-family--big: 41px;}.has-grey-color{color: grey;}.has-grey-background-color{background-color: grey;}:root{--wp--style--color--link: #111;color: var(--wp--preset--color--grey);}';
 
 		$this->assertEquals( $stylesheet, $result );
 	}

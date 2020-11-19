@@ -463,7 +463,23 @@ function gutenberg_experimental_global_styles_settings( $settings ) {
 		// we need to add the styles via the settings. This is because
 		// we want them processed as if they were added via add_editor_styles,
 		// which adds the editor wrapper class.
-		$settings['styles'][] = array( 'css' => gutenberg_experimental_global_styles_get_stylesheet( $all ) );
+		$settings['styles'][] = array(
+			'css'                     => $all->get_presets_and_variables_stylesheet(),
+			'__experimentalNoWrapper' => true,
+		);
+		$settings['styles'][] = array(
+			'css' => $all->get_block_styles_stylesheet(),
+		);
+		if ( gutenberg_experimental_global_styles_has_theme_json_support() ) {
+			// To support all themes, we added in the block-library stylesheet
+			// a style rule such as .has-link-color a { color: var(--wp--style--color--link, #00e); }
+			// so that existing link colors themes used didn't break.
+			// We add this here to make it work for themes that opt-in to theme.json
+			// In the future, we may do this differently.
+			$settings['styles'][] = array(
+				'css' => 'a{color:var(--wp--style--color--link, #00e);}',
+			);
+		}
 	}
 
 	return $settings;

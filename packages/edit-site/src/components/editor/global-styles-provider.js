@@ -20,12 +20,15 @@ import { useSelect, useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { default as getGlobalStyles } from './global-styles-renderer';
 import {
 	GLOBAL_CONTEXT,
 	getValueFromVariable,
 	getPresetVariable,
 } from './utils';
+import {
+	default as getGlobalStyles,
+	getPresetStylesAndVariables,
+} from './global-styles-renderer';
 
 const EMPTY_CONTENT = '{}';
 
@@ -196,6 +199,11 @@ export default function GlobalStylesProvider( { children, baseStyles } ) {
 			...settings,
 			styles: [
 				...newStyles,
+				{
+					css: getPresetStylesAndVariables( contexts, mergedStyles ),
+					isGlobalStyles: true,
+					__experimentalNoWrapper: true,
+				},
 				{
 					css: getGlobalStyles(
 						contexts,

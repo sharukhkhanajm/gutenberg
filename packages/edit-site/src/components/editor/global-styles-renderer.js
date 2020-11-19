@@ -26,37 +26,30 @@ function compileStyleValue( uncompiledValue ) {
 	return uncompiledValue;
 }
 
-export default ( blockData, tree, metadata ) => {
-	const styles = [];
-	// Can this be converted to a context, as the global context?
-	// See comment in the server.
-	styles.push( LINK_COLOR_DECLARATION );
-
+export function getPresetStylesAndVariables( blockData, tree ) {
 	/**
-	 * Transform given style tree into a set of style declarations.
+	 * Transform given preset tree into a set of style declarations.
 	 *
-	 * @param {Object} blockSupports What styles the block supports.
-	 * @param {Object} blockStyles Block styles.
+	 * @param {Object} blockPresets
 	 *
 	 * @return {Array} An array of style declarations.
 	 */
-	const getBlockStylesDeclarations = ( blockSupports, blockStyles = {} ) => {
-		const declarations = [];
-		Object.keys( metadata ).forEach( ( key ) => {
-			const cssProperty = key.startsWith( '--' ) ? key : kebabCase( key );
-			if (
-				blockSupports.includes( key ) &&
-				get( blockStyles, metadata[ key ].value, false )
-			) {
-				declarations.push(
-					`${ cssProperty }: ${ compileStyleValue(
-						get( blockStyles, metadata[ key ].value )
-					) }`
-				);
-			}
-		} );
-
-		return declarations;
+	const getBlockPresetsDeclarations = ( blockPresets = {} ) => {
+		return reduce(
+			PRESET_CATEGORIES,
+			( declarations, { path, key }, category ) => {
+				const preset = get( blockPresets, path, [] );
+				preset.forEach( ( value ) => {
+					declarations.push(
+						`--wp--preset--${ kebabCase( category ) }--${
+							value.slug
+						}: ${ value[ key ] }`
+					);
+				} );
+				return declarations;
+			},
+			[]
+		);
 	};
 
 	/**
@@ -81,31 +74,6 @@ export default ( blockData, tree, metadata ) => {
 				return declarations;
 			},
 			''
-		);
-	};
-
-	/**
-	 * Transform given preset tree into a set of style declarations.
-	 *
-	 * @param {Object} blockPresets
-	 *
-	 * @return {Array} An array of style declarations.
-	 */
-	const getBlockPresetsDeclarations = ( blockPresets = {} ) => {
-		return reduce(
-			PRESET_CATEGORIES,
-			( declarations, { path, key }, category ) => {
-				const preset = get( blockPresets, path, [] );
-				preset.forEach( ( value ) => {
-					declarations.push(
-						`--wp--preset--${ kebabCase( category ) }--${
-							value.slug
-						}: ${ value[ key ] }`
-					);
-				} );
-				return declarations;
-			},
-			[]
 		);
 	};
 
@@ -136,31 +104,79 @@ export default ( blockData, tree, metadata ) => {
 		return flattenTree( blockCustom, '--wp--custom--', '--' );
 	};
 
-	Object.keys( blockData ).forEach( ( context ) => {
-		const blockSelector = blockData[ context ].selector;
+	return reduce(
+		blockData,
+		( styles, specificBlockData, context ) => {
+			const blockSelector = specificBlockData.selector;
+			const blockDeclarations = [
+				...getBlockPresetsDeclarations( tree?.[ context ]?.settings ),
+				...getCustomDeclarations( tree?.[ context ]?.settings?.custom ),
+			];
 
-		const blockDeclarations = [
-			...getBlockStylesDeclarations(
+			if ( blockDeclarations.length > 0 ) {
+				styles.push(
+					`${ blockSelector } { ${ blockDeclarations.join( ';' ) } }`
+				);
+			}
+
+			const presetClasses = getBlockPresetClasses(
+				blockSelector,
+				tree?.[ context ]?.settings
+			);
+			if ( presetClasses ) {
+				styles.push( presetClasses );
+			}
+
+			return styles;
+		},
+		[]
+	).join( '' );
+}
+
+export default ( blockData, tree, metadata ) => {
+	/**
+	 * Transform given style tree into a set of style declarations.
+	 *
+	 * @param {Object} blockSupports What styles the block supports.
+	 * @param {Object} blockStyles Block styles.
+	 *
+	 * @return {Array} An array of style declarations.
+	 */
+	const getBlockStylesDeclarations = ( blockSupports, blockStyles = {} ) => {
+		const declarations = [];
+		Object.keys( metadata ).forEach( ( key ) => {
+			const cssProperty = key.startsWith( '--' ) ? key : kebabCase( key );
+			if (
+				blockSupports.includes( key ) &&
+				get( blockStyles, metadata[ key ].value, false )
+			) {
+				declarations.push(
+					`${ cssProperty }: ${ compileStyleValue(
+						get( blockStyles, metadata[ key ].value )
+					) }`
+				);
+			}
+		} );
+
+		return declarations;
+	};
+
+	return reduce(
+		blockData,
+		( styles, { selector }, context ) => {
+			const blockDeclarations = getBlockStylesDeclarations(
 				blockData[ context ].supports,
 				tree?.[ context ]?.styles
-			),
-			...getBlockPresetsDeclarations( tree?.[ context ]?.settings ),
-			...getCustomDeclarations( tree?.[ context ]?.settings?.custom ),
-		];
-		if ( blockDeclarations.length > 0 ) {
-			styles.push(
-				`${ blockSelector } { ${ blockDeclarations.join( ';' ) } }`
 			);
-		}
-
-		const presetClasses = getBlockPresetClasses(
-			blockSelector,
-			tree?.[ context ]?.settings
-		);
-		if ( presetClasses ) {
-			styles.push( presetClasses );
-		}
-	} );
-
-	return styles.join( '' );
+			if ( blockDeclarations.length > 0 ) {
+				styles.push(
+					`${ selector } { ${ blockDeclarations.join( ';' ) } }`
+				);
+			}
+			return styles;
+		},
+		// Can this be converted to a context, as the global context?
+		// See comment in the server.
+		[ LINK_COLOR_DECLARATION ]
+	).join( '' );
 };
