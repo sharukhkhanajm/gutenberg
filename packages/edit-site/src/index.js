@@ -23,10 +23,7 @@ import registerEditSiteStore from './store';
 import Editor from './components/editor';
 import { findTemplate } from './utils';
 import PostRouter from './components/post-router';
-import {
-	BASE_ROUTE,
-	POST_ROUTER_ROUTE,
-} from './components/post-router/constants';
+import { BASE_ROUTE } from './components/post-router/constants';
 
 const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
 	apiFetch( {
@@ -57,8 +54,10 @@ const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
 function RoutedEditor() {
 	return (
 		<BrowserRouter>
-			<Route path={ BASE_ROUTE } component={ Editor } />
-			<Route path={ POST_ROUTER_ROUTE } component={ PostRouter } />
+			<Route path={ BASE_ROUTE }>
+				<Editor />
+				<PostRouter />
+			</Route>
 		</BrowserRouter>
 	);
 }

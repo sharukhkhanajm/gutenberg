@@ -13,10 +13,14 @@ export default function PostRouter() {
 	const postType = query.get( 'postType' );
 	const id = query.get( 'id' );
 
-	const { setTemplate, setTemplatePart } = useDispatch( 'core/edit-site' );
+	const { setTemplate, setTemplatePart, showHomepage } = useDispatch(
+		'core/edit-site'
+	);
 
 	useEffect( () => {
-		if ( 'wp_template' === postType ) {
+		if ( ! postType ) {
+			showHomepage();
+		} else if ( 'wp_template' === postType ) {
 			setTemplate( id );
 		} else if ( 'wp_template_part' === postType ) {
 			setTemplatePart( id );
