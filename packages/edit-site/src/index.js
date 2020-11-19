@@ -10,7 +10,10 @@ import {
 	__experimentalRegisterExperimentalCoreBlocks,
 } from '@wordpress/block-library';
 import { render } from '@wordpress/element';
-
+/**
+ * External dependencies
+ */
+import { BrowserRouter, Route } from 'react-router-dom';
 /**
  * Internal dependencies
  */
@@ -46,6 +49,15 @@ const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
 			} ) )
 		);
 
+function RoutedEditor() {
+	return (
+		<BrowserRouter>
+			<Route path="/" component={ Editor } />
+			{ /* <Route path="/:postType/:id" component={ PostRouter } /> */ }
+		</BrowserRouter>
+	);
+}
+
 /**
  * Initializes the site editor screen.
  *
@@ -64,7 +76,7 @@ export function initialize( id, settings ) {
 		__experimentalRegisterExperimentalCoreBlocks( true );
 	}
 
-	render( <Editor />, document.getElementById( id ) );
+	render( <RoutedEditor />, document.getElementById( id ) );
 }
 
 export { default as __experimentalNavigationToggle } from './components/navigation-sidebar/navigation-toggle';
