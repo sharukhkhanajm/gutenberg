@@ -5,26 +5,27 @@ import {
 	Button,
 	__experimentalNavigationItem as NavigationItem,
 } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
-
+/**
+ * External dependencies
+ */
+import { useHistory } from 'react-router-dom';
 /**
  * Internal dependencies
  */
 import TemplatePreview from './template-preview';
 import { NavigationPanelPreviewFill } from '../index';
 import { getTemplateInfo } from '../../../utils';
+import getEntityRoute from '../../post-router/get-entity-route';
 
 export default function TemplateNavigationItem( { item } ) {
-	const { setTemplate, setTemplatePart } = useDispatch( 'core/edit-site' );
+	const history = useHistory();
 	const [ isPreviewVisible, setIsPreviewVisible ] = useState( false );
 
 	const { title, description } = getTemplateInfo( item );
 
 	const onActivateItem = () =>
-		'wp_template' === item.type
-			? setTemplate( item.id )
-			: setTemplatePart( item.id );
+		history.push( getEntityRoute( item.type, item.id ) );
 
 	return (
 		<NavigationItem
