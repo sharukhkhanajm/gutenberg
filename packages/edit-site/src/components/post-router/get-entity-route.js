@@ -3,9 +3,14 @@
  */
 import { BASE_ENTITY_ROUTE } from './constants';
 
-export default function getEntityRoute( postType, id ) {
+export default function getEntityRoute( contextType, identifier ) {
+	if ( contextType === 'content' ) {
+		return BASE_ENTITY_ROUTE + `&content=${ identifier }`;
+	}
 	return (
 		BASE_ENTITY_ROUTE +
-		( postType && id ? `&postType=${ postType }&id=${ id }` : '' )
+		( contextType && identifier
+			? `&contextType=${ contextType }&id=${ identifier }`
+			: '' )
 	);
 }

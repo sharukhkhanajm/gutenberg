@@ -10,20 +10,15 @@ import {
 	__experimentalRegisterExperimentalCoreBlocks,
 } from '@wordpress/block-library';
 import { render } from '@wordpress/element';
-/**
- * External dependencies
- */
-import { BrowserRouter, Route } from 'react-router-dom';
+
 /**
  * Internal dependencies
  */
 import './plugins';
 import './hooks';
 import registerEditSiteStore from './store';
-import Editor from './components/editor';
+import RoutedEditor from './components/routed-editor';
 import { findTemplate } from './utils';
-import PostRouter from './components/post-router';
-import { BASE_ROUTE } from './components/post-router/constants';
 
 const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
 	apiFetch( {
@@ -50,17 +45,6 @@ const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
 				title: post.title.rendered || __( '(no title)' ),
 			} ) )
 		);
-
-function RoutedEditor() {
-	return (
-		<BrowserRouter>
-			<Route path={ BASE_ROUTE }>
-				<Editor />
-				<PostRouter />
-			</Route>
-		</BrowserRouter>
-	);
-}
 
 /**
  * Initializes the site editor screen.
