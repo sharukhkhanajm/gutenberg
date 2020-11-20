@@ -43,14 +43,14 @@ export default function PostRouter() {
 		const id = query.get( 'id' );
 		const content = query.get( 'content' );
 
-		if ( content ) {
+		if ( 'content' === contextType && content ) {
 			setPage( JSON.parse( content ) );
-		} else if ( ! contextType || ! id ) {
-			showHomepage();
-		} else if ( 'wp_template' === contextType ) {
+		} else if ( 'wp_template' === contextType && id ) {
 			setTemplate( id );
-		} else if ( 'wp_template_part' === contextType ) {
+		} else if ( 'wp_template_part' === contextType && id ) {
 			setTemplatePart( id );
+		} else {
+			showHomepage();
 		}
 	}, [] );
 
@@ -60,11 +60,11 @@ export default function PostRouter() {
 			history.replace(
 				getEntityRoute( 'content', JSON.stringify( page ) )
 			);
-			return;
+		} else if ( templateType && ( templateId || templatePartId ) ) {
+			history.replace(
+				getEntityRoute( templateType, templateId || templatePartId )
+			);
 		}
-		history.replace(
-			getEntityRoute( templateType, templateId || templatePartId )
-		);
 	}, [ templateId, templatePartId, templateType, page ] );
 
 	return null;
