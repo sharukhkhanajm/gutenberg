@@ -6,16 +6,9 @@ import { useDispatch, useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import useQuery from './use-query';
-import getEntityRoute from './get-entity-route';
-/**
- * External dependencies
- */
-import { useHistory } from 'react-router-dom';
+import updateQueryParams from './update-query-params';
 
 export default function PostRouter() {
-	const history = useHistory();
-	const query = useQuery();
 	const { templateId, templatePartId, templateType, page } = useSelect(
 		( select ) => {
 			const {
@@ -39,6 +32,7 @@ export default function PostRouter() {
 
 	// Set correct entity on load.
 	useEffect( () => {
+		const query = new URLSearchParams( window.location.search );
 		const contextType = query.get( 'contextType' );
 		const id = query.get( 'id' );
 		const content = query.get( 'content' );
@@ -57,13 +51,9 @@ export default function PostRouter() {
 	// Upadte URL when context changes.
 	useEffect( () => {
 		if ( page ) {
-			history.replace(
-				getEntityRoute( 'content', JSON.stringify( page ) )
-			);
+			updateQueryParams( 'content', JSON.stringify( page ) );
 		} else if ( templateType && ( templateId || templatePartId ) ) {
-			history.replace(
-				getEntityRoute( templateType, templateId || templatePartId )
-			);
+			updateQueryParams( templateType, templateId || templatePartId );
 		}
 	}, [ templateId, templatePartId, templateType, page ] );
 

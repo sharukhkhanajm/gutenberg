@@ -17,7 +17,7 @@ import { render } from '@wordpress/element';
 import './plugins';
 import './hooks';
 import registerEditSiteStore from './store';
-import RoutedEditor from './components/routed-editor';
+import Editor from './components/editor';
 import { findTemplate } from './utils';
 
 const fetchLinkSuggestions = ( search, { perPage = 20 } = {} ) =>
@@ -64,7 +64,7 @@ export function initialize( id, settings ) {
 		__experimentalRegisterExperimentalCoreBlocks( true );
 	}
 
-	render( <RoutedEditor />, document.getElementById( id ) );
+	render( <Editor />, document.getElementById( id ) );
 }
 
 export { default as __experimentalNavigationToggle } from './components/navigation-sidebar/navigation-toggle';
