@@ -1,7 +1,5 @@
 .edit-post-visual-editor {
 	position: relative;
-	// Default background color so that grey .edit-post-editor-regions__content color doesn't show through.
-	background-color: $white;
 
 	// The button element easily inherits styles that are meant for the editor style.
 	// These rules enhance the specificity to reduce that inheritance.
@@ -27,8 +25,7 @@
 	}
 }
 
-.editor-styles-wrapper,
-.editor-styles-wrapper > .block-editor-writing-flow__click-redirect {
+.editor-styles-wrapper {
 	height: 100%;
 }
 
