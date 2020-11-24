@@ -7,6 +7,7 @@ import { flatMap, filter, compact } from 'lodash';
  * WordPress dependencies
  */
 import { getPhrasingContentSchema, removeInvalidHTML } from '@wordpress/dom';
+import { escapeEditableHTML } from '@wordpress/escape-html';
 
 /**
  * Internal dependencies
@@ -137,6 +138,7 @@ function htmlToBlocks( { html, rawTransforms } ) {
  *                                      * 'BLOCKS': Always handle as blocks, and return array of blocks.
  * @param {Array}   [options.tagName]   The tag into which content will be inserted.
  * @param {boolean} [options.preserveWhiteSpace] Whether or not to preserve consequent white space.
+ * @param {boolean} [options.preservePlainText]
  *
  * @return {Array|string} A list of blocks or a string, depending on `handlerMode`.
  */
@@ -146,6 +148,7 @@ export function pasteHandler( {
 	mode = 'AUTO',
 	tagName,
 	preserveWhiteSpace,
+	preservePlainText,
 } ) {
 	// First of all, strip any meta tags.
 	HTML = HTML.replace( /<meta[^>]+>/g, '' );
@@ -180,10 +183,16 @@ export function pasteHandler( {
 		HTML = HTML.normalize();
 	}
 
+	const isPlainText = ! HTML || isPlain( HTML );
+
+	if ( preservePlainText && isPlainText ) {
+		return escapeEditableHTML( plainText ).replace( /\n/g, '<br>' );
+	}
+
 	// Parse Markdown (and encoded HTML) if:
 	// * There is a plain text version.
 	// * There is no HTML version, or it has no formatting.
-	if ( plainText && ( ! HTML || isPlain( HTML ) ) ) {
+	if ( plainText && isPlainText ) {
 		HTML = markdownConverter( plainText );
 
 		// Switch to inline mode if:

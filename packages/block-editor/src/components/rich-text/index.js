@@ -120,6 +120,7 @@ function RichTextWrapper(
 		__unstableOnSplitMiddle: onSplitMiddle,
 		identifier,
 		preserveWhiteSpace,
+		preservePastedPlainText: preservePlainText,
 		__unstableEmbedURLOnPaste,
 		__unstableDisableFormats: disableFormats,
 		disableLineBreaks,
@@ -459,6 +460,7 @@ function RichTextWrapper(
 				mode,
 				tagName,
 				preserveWhiteSpace,
+				preservePlainText,
 			} );
 
 			if ( typeof content === 'string' ) {
@@ -503,6 +505,7 @@ function RichTextWrapper(
 			__unstableEmbedURLOnPaste,
 			multiline,
 			preserveWhiteSpace,
+			preservePlainText,
 		]
 	);
 
